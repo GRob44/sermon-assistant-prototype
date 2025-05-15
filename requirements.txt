@@ -2,4 +2,7 @@ streamlit
 openai
 tiktoken
 requests
+python-docx
+fpdf
+
 
