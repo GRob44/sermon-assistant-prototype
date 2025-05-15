@@ -88,16 +88,14 @@ if user_input:
         return buffer
 
     def export_pdf(content):
-        pdf = FPDF()
-        pdf.add_page()
-        pdf.set_auto_page_break(auto=True, margin=15)
-        pdf.set_font("Arial", size=12)
-        for line in content.split('\n'):
-            pdf.multi_cell(0, 10, line)
-        buffer = BytesIO()
-        pdf.output(buffer)
-        buffer.seek(0)
-        return buffer
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_auto_page_break(auto=True, margin=15)
+    pdf.set_font("Arial", size=12)
+    for line in content.split('\n'):
+        pdf.multi_cell(0, 10, line)
+    pdf_output = pdf.output(dest='S').encode('latin-1')
+    return BytesIO(pdf_output)
 
     # Only show export for latest assistant message
     if output_text:
