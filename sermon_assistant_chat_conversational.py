@@ -38,14 +38,17 @@ system_prompts = {
 
 system_prompt = system_prompts[content_type]
 
+# Initialize or reset chat based on role change
 if "messages" not in st.session_state or st.session_state.get("last_role") != content_type:
     st.session_state.messages = [{"role": "system", "content": system_prompt}]
     st.session_state.last_role = content_type
 
+# Display chat history
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.write(msg["content"])
 
+# --- Chat input ---
 user_input = st.chat_input(f"Chat with your {content_type.lower()}...")
 if user_input:
     st.session_state.messages.append({"role": "user", "content": user_input})
@@ -77,9 +80,11 @@ if user_input:
     output_cost = (output_tokens / 1000) * PRICE_PER_1K_OUTPUT
     total_cost = input_cost + output_cost
 
+    # Use assistant message container
     with st.chat_message("assistant"):
         st.write(output_text)
 
+        # Export functions inside assistant bubble
         def export_text(content):
             return BytesIO(content.encode())
 
@@ -101,7 +106,6 @@ if user_input:
             pdf_output = pdf.output(dest='S').encode('latin-1')
             return BytesIO(pdf_output)
 
-        # Export inside chat message only
         st.write("#### 📥 Export this reply")
         st.download_button("Download as TXT", export_text(output_text), file_name="chat_content.txt")
         st.download_button("Download as DOCX", export_docx(output_text), file_name="chat_content.docx")
@@ -113,7 +117,7 @@ if user_input:
 
     st.session_state.messages.append({"role": "assistant", "content": output_text})
 
-# Reset chat button (bottom of page only)
+# Reset chat button at the bottom
 if st.button("🧹 Reset Chat"):
     st.session_state.messages = [{"role": "system", "content": system_prompt}]
     st.success("Chat reset.")
