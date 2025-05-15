@@ -80,44 +80,46 @@ if user_input:
     output_cost = (output_tokens / 1000) * PRICE_PER_1K_OUTPUT
     total_cost = input_cost + output_cost
 
+    # Assistant message bubble ONLY with text
     with st.chat_message("assistant"):
         st.write(output_text)
 
-        # Export functions inside assistant bubble, split left and right
-        col1, col2 = st.columns([1, 1])
+    # --- BELOW the chat message: Export & Token Info ---
+    col1, col2 = st.columns([1, 1])
 
-        with col1:
-            st.write("##### 📥 Export")
-            def export_text(content):
-                return BytesIO(content.encode())
+    with col1:
+        st.write("##### 📥 Export")
+        def export_text(content):
+            return BytesIO(content.encode())
 
-            def export_docx(content):
-                doc = Document()
-                doc.add_paragraph(content)
-                buffer = BytesIO()
-                doc.save(buffer)
-                buffer.seek(0)
-                return buffer
+        def export_docx(content):
+            doc = Document()
+            doc.add_paragraph(content)
+            buffer = BytesIO()
+            doc.save(buffer)
+            buffer.seek(0)
+            return buffer
 
-            def export_pdf(content):
-                pdf = FPDF()
-                pdf.add_page()
-                pdf.set_auto_page_break(auto=True, margin=15)
-                pdf.set_font("Arial", size=12)
-                for line in content.split('\n'):
-                    pdf.multi_cell(0, 10, line)
-                pdf_output = pdf.output(dest='S').encode('latin-1')
-                return BytesIO(pdf_output)
+        def export_pdf(content):
+            pdf = FPDF()
+            pdf.add_page()
+            pdf.set_auto_page_break(auto=True, margin=15)
+            pdf.set_font("Arial", size=12)
+            for line in content.split('\n'):
+                pdf.multi_cell(0, 10, line)
+            pdf_output = pdf.output(dest='S').encode('latin-1')
+            return BytesIO(pdf_output)
 
-            st.download_button("TXT", export_text(output_text), file_name="chat_content.txt", key=f"txt_{len(st.session_state.messages)}")
-            st.download_button("DOCX", export_docx(output_text), file_name="chat_content.docx", key=f"docx_{len(st.session_state.messages)}")
-            st.download_button("PDF", export_pdf(output_text), file_name="chat_content.pdf", key=f"pdf_{len(st.session_state.messages)}")
+        st.download_button("TXT", export_text(output_text), file_name="chat_content.txt", key=f"txt_{len(st.session_state.messages)}")
+        st.download_button("DOCX", export_docx(output_text), file_name="chat_content.docx", key=f"docx_{len(st.session_state.messages)}")
+        st.download_button("PDF", export_pdf(output_text), file_name="chat_content.pdf", key=f"pdf_{len(st.session_state.messages)}")
 
-        with col2:
-            st.write("##### 🔢 Tokens & Cost")
-            st.info(f"Input: {input_tokens} | Output: {output_tokens}")
-            st.info(f"💰 Estimated: ${total_cost:.4f}")
+    with col2:
+        st.write("##### 🔢 Tokens & Cost")
+        st.info(f"Input: {input_tokens} | Output: {output_tokens}")
+        st.info(f"💰 Estimated: ${total_cost:.4f}")
 
+    # Append assistant message to state
     st.session_state.messages.append({"role": "assistant", "content": output_text})
 
 # Reset chat button at the bottom
