@@ -176,15 +176,27 @@ def export_docx(content):
     return buffer
 
 def export_pdf(content):
+    def sanitize_text(text):
+        replacements = {
+            "—": "-",    # em-dash
+            "–": "-",    # en-dash
+            "“": '"',    # left quote
+            "”": '"',    # right quote
+            "‘": "'",    # left apostrophe
+            "’": "'",    # right apostrophe
+            "…": "...",  # ellipsis
+        }
+        for orig, repl in replacements.items():
+            text = text.replace(orig, repl)
+        return ''.join([c if ord(c) < 256 else '?' for c in text])
+
+    sanitized_content = sanitize_text(content)
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Arial", size=12)
-    for line in content.split('\n'):
-        try:
-            pdf.multi_cell(0, 10, line)
-        except:
-            pdf.multi_cell(0, 10, line.encode('latin-1', 'ignore').decode('latin-1'))
-    return BytesIO(pdf.output(dest='S').encode('latin-1', 'ignore'))
+    for line in sanitized_content.split('\n'):
+        pdf.multi_cell(0, 10, line)
+    return BytesIO(pdf.output(dest='S').encode('latin-1'))
 
 st.divider()
 st.write("### 💾 Save this conversation")
