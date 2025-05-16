@@ -7,71 +7,73 @@ from docx import Document
 from fpdf import FPDF
 import random
 
-# Setup
+# OpenAI client setup
 client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 MODEL = "gpt-3.5-turbo"
 PRICE_PER_1K_INPUT = 0.0015
 PRICE_PER_1K_OUTPUT = 0.002
 tokenizer = tiktoken.encoding_for_model(MODEL)
 
-st.title("AI Ministry Conversational Assistant (Full Chat Export Version)")
+# Title and welcome
+st.title("Faith Conversation Assistant")
+st.caption("Helping you reflect, study, and wrestle through Scripture and life — together.")
 
-# Assistant type selector
-content_type = st.selectbox("Select Assistant Style", [
-    "Pastoral Chat & Sermon Coach",
-    "Devotional Guide",
-    "Bible Study Partner",
-    "Small Group Coach",
-    "Children's Lesson Creator",
-    "Social Media Pastor"
+# Assistant styles
+content_type = st.selectbox("What kind of help do you need today?", [
+    "Just Talk — I need to process something",
+    "Bible Study Companion",
+    "Devotional Creator",
+    "Small Group Guide",
+    "Message or Sermon Brainstorm",
 ])
 
+# Gentle system prompt
 system_prompts = {
-    "Pastoral Chat & Sermon Coach": "You are a caring, conversational AI ministry coach...",
-    "Devotional Guide": "You are a devotional companion...",
-    "Bible Study Partner": "You are a Bible study partner...",
-    "Small Group Coach": "You are a small group discussion coach...",
-    "Children's Lesson Creator": "You are a creative, fun children's ministry helper...",
-    "Social Media Pastor": "You are a social media pastor...",
+    "Just Talk — I need to process something": "You are a kind, patient spiritual companion. Ask gentle follow-up questions, listen well, and speak with pastoral care.",
+    "Bible Study Companion": "You are a thoughtful Bible study partner. Help reflect on Scripture, ask what stands out, and suggest related passages.",
+    "Devotional Creator": "You are a devotional guide. Help turn themes and verses into heartfelt devotionals with reflection and prayer.",
+    "Small Group Guide": "You are a group leader. Suggest questions, reflections, and themes to open up conversation and connection.",
+    "Message or Sermon Brainstorm": "You are a sermon idea coach. Help the user unpack themes and develop outlines based on Scripture and life."
 }
-
 system_prompt = system_prompts[content_type]
 
-# Session initialization
+# Setup session
 if "messages" not in st.session_state or st.session_state.get("last_role") != content_type:
-    st.session_state.messages = [{"role": "system", "content": system_prompt}]
+    st.session_state.messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "assistant", "content": "Hey there. I'm here to help you reflect, study, or just process what's on your heart today. Want to start with a verse, a topic, or something you're walking through?"}
+    ]
     st.session_state.last_role = content_type
 
-# Display previous messages
+# Display full conversation
 for msg in st.session_state.messages:
     if msg["role"] in ["user", "assistant"]:
         with st.chat_message(msg["role"]):
             st.write(msg["content"])
 
 # Chat input
-user_input = st.chat_input(f"Chat with your {content_type.lower()}...")
+user_input = st.chat_input("Type your question, verse, or thought here...")
 if user_input:
     st.session_state.messages.append({"role": "user", "content": user_input})
-
     prompt_text = ''.join([m['content'] for m in st.session_state.messages])
     input_tokens = len(tokenizer.encode(prompt_text))
 
+    # OpenAI call
     response = client.chat.completions.create(
         model=MODEL,
         messages=st.session_state.messages,
         temperature=0.7,
         max_tokens=1200,
     )
-
     output_text = response.choices[0].message.content
 
-    # Add a random conversational follow-up
+    # More human-style closing suggestions
     follow_ups = [
-        "Would you like me to suggest a closing illustration?",
-        "Would you like help turning this into a devotional?",
-        "Would you like a group discussion starter for this?",
-        "Want a related Scripture passage?",
-        "Need help outlining the next part?"
+        "Want to keep exploring this?",
+        "Would you like me to help turn this into a devotional or prayer?",
+        "Do you want to share this with someone or keep reflecting?",
+        "Need some help making this a group discussion?",
+        "Would a related Scripture help here?"
     ]
     output_text += "\n\n" + random.choice(follow_ups)
 
@@ -80,18 +82,15 @@ if user_input:
     output_cost = (output_tokens / 1000) * PRICE_PER_1K_OUTPUT
     total_cost = input_cost + output_cost
 
-    # Display assistant message
     with st.chat_message("assistant"):
         st.write(output_text)
 
-    # Add to chat history
     st.session_state.messages.append({"role": "assistant", "content": output_text})
 
-# Divider and export tools AFTER the chat input
+# Divider
 st.divider()
-st.write("### 📁 Export Full Conversation or View Stats")
 
-# Compile full chat transcript (excluding system)
+# Save full chat
 transcript = ""
 for msg in st.session_state.messages:
     if msg["role"] == "user":
@@ -99,7 +98,7 @@ for msg in st.session_state.messages:
     elif msg["role"] == "assistant":
         transcript += f"Assistant: {msg['content']}\n\n"
 
-# Export helpers
+# Export functions
 def export_text(chat_text):
     return BytesIO(chat_text.encode())
 
@@ -126,20 +125,24 @@ def export_pdf(chat_text):
     output = pdf.output(dest='S').encode('latin-1')
     return BytesIO(output)
 
-# Display export + token usage
+# Friendly footer
+st.write("### 💾 Save this conversation")
 col1, col2 = st.columns([1, 1])
-
 with col1:
-    st.download_button("⬇️ Export as TXT", export_text(transcript), file_name="full_chat.txt")
-    st.download_button("⬇️ Export as DOCX", export_docx(transcript), file_name="full_chat.docx")
-    st.download_button("⬇️ Export as PDF", export_pdf(transcript), file_name="full_chat.pdf")
+    st.download_button("📝 Save as Text", export_text(transcript), file_name="faith_conversation.txt")
+    st.download_button("📄 Save as Word", export_docx(transcript), file_name="faith_conversation.docx")
+    st.download_button("📰 Save as PDF", export_pdf(transcript), file_name="faith_conversation.pdf")
 
 with col2:
-    st.write("##### 🔢 Token Usage (Last Response)")
-    st.info(f"Input Tokens: {input_tokens}  \nOutput Tokens: {output_tokens}")
-    st.info(f"💰 Est. Cost: ${total_cost:.4f}")
+    with st.expander("💡 Behind the Scenes"):
+        st.write(f"Input Tokens: {input_tokens}")
+        st.write(f"Output Tokens: {output_tokens}")
+        st.write(f"Estimated Cost: ${round(input_cost + output_cost, 4)}")
 
-# Reset Button
-if st.button("🧹 Reset Chat"):
-    st.session_state.messages = [{"role": "system", "content": system_prompt}]
-    st.success("Chat history cleared.")
+# Reset chat
+if st.button("🧹 Start Over"):
+    st.session_state.messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "assistant", "content": "Hey there. I'm here to help you reflect, study, or just process what's on your heart today. Want to start with a verse, a topic, or something you're walking through?"}
+    ]
+    st.success("Conversation reset.")
