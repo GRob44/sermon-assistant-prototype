@@ -134,10 +134,14 @@ with col1:
     st.download_button("📰 Save as PDF", export_pdf(transcript), file_name="faith_conversation.pdf")
 
 with col2:
-    with st.expander("💡 Behind the Scenes"):
-        st.write(f"Input Tokens: {input_tokens}")
-        st.write(f"Output Tokens: {output_tokens}")
-        st.write(f"Estimated Cost: ${round(input_cost + output_cost, 4)}")
+    if "input_tokens" in locals() and "output_tokens" in locals():
+        with st.expander("💡 Behind the Scenes"):
+            st.write(f"Input Tokens: {input_tokens}")
+            st.write(f"Output Tokens: {output_tokens}")
+            st.write(f"Estimated Cost: ${round(input_cost + output_cost, 4)}")
+    else:
+        with st.expander("💡 Behind the Scenes"):
+            st.write("Send a message to view token details.")
 
 # Reset chat
 if st.button("🧹 Start Over"):
