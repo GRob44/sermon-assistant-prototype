@@ -9,6 +9,62 @@ import random
 
 # ========== MODE DEFINITIONS ==========
 MODES = {
+    "just_talk": {
+        "name": "Just Talk",
+        "tone": "gentle",
+        "description": "Conversational companion for people who want to reflect, vent, or process life through faith.",
+        "starting_prompt": "What's on your heart today?",
+        "follow_ups": [
+            "Would you like to talk about how this connects to your faith?",
+            "Is there a Scripture or prayer that might help you right now?",
+            "Would you like to reflect on Psalm 34:18—'The Lord is close to the brokenhearted'?"
+        ],
+        "emotionally_healthy": True
+    },
+    "bible_study": {
+        "name": "Bible Study Companion",
+        "tone": "thoughtful",
+        "description": "Helps reflect on Scripture, provides insights and related verses.",
+        "starting_prompt": "What verse or passage are you exploring today?",
+        "follow_ups": [
+            "Would you like a related Scripture?",
+            "Want to reflect on how this might apply to your life?"
+        ],
+        "emotionally_healthy": False
+    },
+    "devotional": {
+        "name": "Devotional Creator",
+        "tone": "encouraging",
+        "description": "Helps turn thoughts, verses, or struggles into devotionals with reflection and prayer.",
+        "starting_prompt": "Would you like to write a devotional based on a verse, a theme, or your current season?",
+        "follow_ups": [
+            "Would you like a prayer to go with this?",
+            "Want to add a personal reflection point or takeaway?"
+        ],
+        "emotionally_healthy": True
+    },
+    "grief_support": {
+        "name": "Grief & Anxiety Support",
+        "tone": "compassionate",
+        "description": "Walks with those experiencing grief, fear, or emotional overwhelm.",
+        "starting_prompt": "How are you feeling today? What are you carrying right now?",
+        "follow_ups": [
+            "Would you like a Scripture to sit with right now?",
+            "Would it help to pray together through this?"
+        ],
+        "emotionally_healthy": True
+    },
+    "marriage_parenting": {
+        "name": "Marriage & Parenting Help",
+        "tone": "wise",
+        "description": "Provides biblical support for relationship challenges and family life.",
+        "starting_prompt": "Is there something you’re facing in your marriage or family today?",
+        "follow_ups": [
+            "Would you like a Scripture that speaks to this?",
+            "Want help turning this into a conversation with your spouse or child?"
+        ],
+        "emotionally_healthy": True
+    },
     "evangelism": {
         "name": "Exploring Faith / Evangelism",
         "tone": "respectful",
@@ -20,9 +76,25 @@ MODES = {
         ],
         "emotionally_healthy": False,
         "gospel_clarity_level": "high"
+    },
+    "pastor_support": {
+        "name": "Pastor Support",
+        "tone": "empathetic",
+        "description": "Offers guidance, sermon support, and emotional care for ministry leaders.",
+        "starting_prompt": "How are you holding up lately—in your soul, your work, your home?",
+        "follow_ups": [
+            "Would you like help preparing for this Sunday?",
+            "Need a moment to talk through what you're carrying?"
+        ],
+        "emotionally_healthy": True,
+        "resource_suggestions": [
+            "Emotionally Healthy Leader by Peter Scazzero",
+            "The Resilient Pastor by Glenn Packiam",
+            "Carey Nieuwhof Leadership Podcast",
+            "Barna Group research for church trends"
+        ]
     }
 }
-
 # ========== OPENAI SETUP ==========
 client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 MODEL = "gpt-3.5-turbo"
